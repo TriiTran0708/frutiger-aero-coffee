@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Management Coffee</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ AUTH ============ -->
+<section class="auth" id="authView">
+  <div class="auth-art">
+    <div class="cup"><i></i>Management Coffee</div>
+    <div>
+      <h1>Quản lý quán cà phê gọn trong một màn hình.</h1>
+      <p>Đơn hàng, thực đơn, khách hàng và doanh thu theo thời gian thực.</p>
+    </div>
+    <small>Xác thực bằng Supabase Auth</small>
+  </div>
+  <div class="auth-form">
+    <div class="card">
+      <div id="cfgWarn" class="warn hidden">Chưa cấu hình Supabase. Mở file <b>config.js</b> và điền <b>SUPABASE_URL</b>, <b>SUPABASE_ANON_KEY</b>.</div>
+      <h2 id="authTitle">Chào mừng trở lại</h2>
+      <p class="sub" id="authSub">Đăng nhập để vào trang quản lý.</p>
+      <div class="tabs">
+        <button id="tabIn" class="on" type="button">Đăng nhập</button>
+        <button id="tabUp" type="button">Đăng ký</button>
+      </div>
+      <div id="authForm">
+        <div id="nameWrap" class="hidden"><label for="fullName">Họ và tên</label><input id="fullName" autocomplete="name"></div>
+        <label for="email">Email</label><input id="email" type="email" autocomplete="email">
+        <label for="password">Mật khẩu</label><input id="password" type="password" autocomplete="current-password" placeholder="Tối thiểu 6 ký tự">
+        <div id="confirmWrap" class="hidden"><label for="confirm">Nhập lại mật khẩu</label><input id="confirm" type="password" autocomplete="new-password"></div>
+        <button class="btn" id="authBtn" type="button">Đăng nhập</button>
+        <div id="authMsg" class="msg hidden" role="alert"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DASHBOARD ============ -->
+<div class="app hidden" id="appView">
+  <aside class="side">
+    <div class="cup"><i></i>Management Coffee</div>
+    <button class="nav on" data-page="overview">Tổng quan</button>
+    <button class="nav" data-page="orders">Đơn hàng</button>
+    <button class="nav" data-page="products">Sản phẩm / Menu</button>
+    <button class="nav" data-page="customers">Khách hàng</button>
+    <button class="nav" data-page="payments">Thanh toán &amp; Mở rộng</button>
+    <div class="who" id="who"></div>
+    <button class="logout" id="logoutBtn">Đăng xuất</button>
+  </aside>
+  <main>
+    <div class="top">
+      <h2 id="pageTitle">Tổng quan</h2>
+      <div class="live"><b></b>Dữ liệu trực tiếp</div>
+    </div>
+
+    <!-- Tổng quan -->
+    <div class="page" id="p-overview">
+      <div class="stats">
+        <div class="panel stat"><small>Doanh thu hôm nay</small><strong id="sRev">0 ₫</strong></div>
+        <div class="panel stat"><small>Số đơn</small><strong id="sOrd">0</strong></div>
+        <div class="panel stat"><small>Đang pha chế</small><strong id="sMaking">0</strong></div>
+        <div class="panel stat"><small>Khách hàng</small><strong id="sCus">0</strong></div>
+      </div>
+      <div class="grid2">
+        <div class="panel"><h3>Đơn mới nhất</h3><div class="table-wrap"><table><thead><tr><th>Mã</th><th>Món</th><th>Tổng</th><th>Trạng thái</th></tr></thead><tbody id="recent"></tbody></table></div></div>
+        <div class="panel chart"><h3>Doanh thu theo giờ (nghìn ₫)</h3><div class="bars" id="bars"></div></div>
+      </div>
+    </div>
+
+    <!-- Đơn hàng -->
+    <div class="page hidden" id="p-orders">
+      <div class="panel">
+        <div class="row-form">
+          <select id="oProd"></select>
+          <input id="oQty" type="number" min="1" value="1" style="max-width:90px">
+          <input id="oCus" placeholder="Tên khách">
+          <button id="oAdd">Tạo đơn</button>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Mã</th><th>Khách</th><th>Món</th><th>Tổng</th><th>Trạng thái</th><th></th></tr></thead><tbody id="orderRows"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- Sản phẩm -->
+    <div class="page hidden" id="p-products">
+      <div class="panel">
+        <div class="row-form">
+          <input id="pName" placeholder="Tên món">
+          <input id="pPrice" type="number" placeholder="Giá (₫)" min="0">
+          <select id="pCat"><option>Cà phê</option><option>Trà</option><option>Sinh tố</option><option>Bánh</option></select>
+          <button id="pAdd">Thêm món</button>
+        </div>
+        <div class="products" id="prodGrid"></div>
+      </div>
+    </div>
+
+    <!-- Khách hàng -->
+    <div class="page hidden" id="p-customers">
+      <div class="panel"><div class="table-wrap"><table><thead><tr><th>Khách hàng</th><th>Số điện thoại</th><th>Số đơn</th><th>Điểm tích lũy</th><th>Hạng</th></tr></thead><tbody id="cusRows"></tbody></table></div></div>
+    </div>
+
+    <!-- Thanh toán -->
+    <div class="page hidden" id="p-payments">
+      <div class="grid2">
+        <div class="panel"><h3>Phương thức thanh toán</h3>
+          <div class="pay"><span>Tiền mặt</span><span>Chuyển khoản QR</span><span>Momo</span><span>ZaloPay</span><span>Thẻ Visa/Master</span></div>
+          <p style="color:var(--muted)">Cổng thanh toán được thiết kế dạng module, thêm nhà cung cấp mới không cần sửa phần đơn hàng.</p>
+        </div>
+        <div class="panel"><h3>Khả năng mở rộng</h3>
+          <ul class="list"><li>Thêm chi nhánh mới, mỗi chi nhánh có kho và nhân viên riêng</li><li>Phân quyền: chủ quán, quản lý, thu ngân, pha chế</li><li>Supabase Realtime đồng bộ đơn hàng giữa quầy và bếp</li><li>Báo cáo xuất Excel / PDF</li></ul>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
