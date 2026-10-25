@@ -3,6 +3,7 @@ const configured = !SUPABASE_URL.includes("YOUR-PROJECT") && !SUPABASE_ANON_KEY.
 const sb = configured ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 const $ = id => document.getElementById(id);
 const money = n => n.toLocaleString("vi-VN") + " ₫";
+const escapeHTML = value => String(value).replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char]));
 
 /* ===== 2. AUTH ===== */
 let mode = "in";
@@ -96,6 +97,16 @@ function renderAll(){
   const row = (o,act) => `<tr><td>${o.id}</td>${act?`<td>${o.cus}</td>`:""}<td>${o.item}</td><td>${money(o.total)}</td><td><span class="tag t-${o.status}">${label[o.status]}</span></td>${act?`<td>${o.status!=="done"?`<button class="small-btn" data-adv="${o.id}">${o.status==="new"?"Pha chế":"Xong"}</button>`:""}</td>`:""}</tr>`;
   $("recent").innerHTML = orders.slice(0,5).map(o=>row(o,false)).join("") || `<tr><td colspan="4">Chưa có đơn. Đơn mới sẽ hiện ở đây.</td></tr>`;
   $("orderRows").innerHTML = orders.map(o=>row(o,true)).join("") || `<tr><td colspan="6">Chưa có đơn. Tạo đơn đầu tiên ở phía trên.</td></tr>`;
+  const customerOrderRows = $("customerOrderRows");
+  if (customerOrderRows) {
+    const customerOrders = JSON.parse(localStorage.getItem("coffee_customer_orders") || "[]");
+    const orderStatus = {new:"Đã tiếp nhận",making:"Đang pha chế",done:"Hoàn thành"};
+    customerOrderRows.innerHTML = customerOrders.length ? customerOrders.slice().reverse().map(order => {
+      const items = (order.items || []).map(item => `${escapeHTML(item.name)} ×${item.quantity}`).join(", ");
+      const nextStatus = order.status === "new" ? "making" : order.status === "making" ? "done" : "";
+      return `<tr><td>${escapeHTML(order.id)}</td><td>${escapeHTML(order.customerName)}</td><td>${escapeHTML(order.customerPhone)}</td><td>${items}</td><td>${money(order.total)}</td><td>${orderStatus[order.status] || "Đã tiếp nhận"}</td><td>${nextStatus ? `<button class="small-btn" data-customer-order="${escapeHTML(order.id)}">${nextStatus === "making" ? "Bắt đầu pha" : "Hoàn thành"}</button>` : ""}</td></tr>`;
+    }).join("") : `<tr><td colspan="7">Chưa có đơn khách đặt.</td></tr>`;
+  }
   const max = Math.max(...hourly);
   $("bars").innerHTML = hourly.map((v,i)=>`<div style="height:${v/max*100}%" title="${v}k"><span>${hours[i]}h</span></div>`).join("");
   $("prodGrid").innerHTML = products.map((p,i)=>`<div class="panel prod"><div class="swatch" style="background:${colors[i%colors.length]}"></div><h4>${p.name}</h4><p>${p.cat} · ${money(p.price)}</p><button class="small-btn" data-del="${i}" style="margin-top:8px">Xóa</button></div>`).join("");
@@ -106,7 +117,13 @@ document.addEventListener("click", e => {
   const a = e.target.dataset;
   if (a.adv){ const o = orders.find(x=>x.id===a.adv); o.status = o.status==="new"?"making":"done"; renderAll(); }
   if (a.del){ products.splice(+a.del,1); renderAll(); }
+  if (a.customerOrder){
+    const stored = JSON.parse(localStorage.getItem("coffee_customer_orders") || "[]");
+    const order = stored.find(item => item.id === a.customerOrder);
+    if (order) { order.status = order.status === "new" ? "making" : "done"; localStorage.setItem("coffee_customer_orders", JSON.stringify(stored)); renderAll(); }
+  }
 });
+window.addEventListener("storage", e => { if (e.key === "coffee_customer_orders") renderAll(); });
 $("oAdd").onclick = () => { addOrder(+$("oProd").value, Math.max(1,+$("oQty").value||1), $("oCus").value.trim()); $("oCus").value=""; };
 $("pAdd").onclick = () => {
   const name = $("pName").value.trim(), price = +$("pPrice").value;

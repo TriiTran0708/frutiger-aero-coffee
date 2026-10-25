@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đặt món | Management Coffee</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="customer-page">
+<header class="customer-header">
+  <a class="customer-brand" href="user-coffee.html"><span class="brand-mark">☕</span> Management Coffee</a>
+  <nav aria-label="Điều hướng">
+    <a href="#menu">Thực đơn</a>
+    <a href="#tracking">Theo dõi đơn</a>
+    <a class="cart-link" href="#cart">Giỏ hàng <span id="cartCount">0</span></a>
+    <a class="manager-link" href="management-coffee.html">Quản lý</a>
+  </nav>
+</header>
+<main class="customer-main">
+  <section class="customer-intro" aria-labelledby="shopTitle">
+    <div><p class="eyebrow">Pha mới mỗi ngày</p><h1 id="shopTitle">Chọn món bạn thích.</h1><p>Cà phê, trà và bánh được chuẩn bị tại quán. Đặt trước, theo dõi trạng thái ngay tại đây.</p></div>
+    <a class="intro-action" href="#menu">Xem thực đơn <span aria-hidden="true">↓</span></a>
+  </section>
+  <div class="customer-layout">
+    <section class="menu-section" id="menu" aria-labelledby="menuTitle">
+      <div class="section-heading"><div><p class="eyebrow">Menu hôm nay</p><h2 id="menuTitle">Thực đơn</h2></div><div class="category-filter" id="categoryFilter" aria-label="Lọc theo danh mục"></div></div>
+      <div class="customer-products" id="customerProducts"></div>
+    </section>
+    <aside class="order-column">
+      <section class="customer-panel cart-panel" id="cart" aria-labelledby="cartTitle">
+        <div class="section-heading"><div><p class="eyebrow">Đơn của bạn</p><h2 id="cartTitle">Giỏ hàng</h2></div><span class="cart-total-count" id="cartTotalCount">0 món</span></div>
+        <div class="cart-items" id="cartItems"></div>
+        <div class="cart-summary"><span>Tổng cộng</span><strong id="cartTotal">0 ₫</strong></div>
+        <form id="checkoutForm" class="checkout-form">
+          <label for="customerName">Tên người nhận</label><input id="customerName" name="customerName" autocomplete="name" placeholder="Tên của bạn" required maxlength="80">
+          <label for="customerPhone">Số điện thoại</label><input id="customerPhone" name="customerPhone" type="tel" autocomplete="tel" placeholder="090 123 4567" required maxlength="16">
+          <button class="place-order-btn" id="placeOrderBtn" type="submit" disabled>Đặt món</button>
+          <p class="checkout-message" id="checkoutMessage" role="status"></p>
+        </form>
+      </section>
+      <section class="customer-panel tracking-panel" id="tracking" aria-labelledby="trackingTitle">
+        <p class="eyebrow">Cập nhật tại quán</p><h2 id="trackingTitle">Theo dõi đơn</h2>
+        <form id="trackingForm" class="tracking-form">
+          <label class="visually-hidden" for="trackingPhone">Số điện thoại đặt hàng</label>
+          <input id="trackingPhone" type="tel" placeholder="Số điện thoại đặt hàng" required maxlength="16">
+          <button type="submit">Tìm đơn</button>
+        </form>
+        <div id="trackingResults" class="tracking-results" aria-live="polite"><p class="empty-note">Nhập số điện thoại đã dùng khi đặt món.</p></div>
+      </section>
+    </aside>
+  </div>
+</main>
+<footer class="customer-footer"><span>Management Coffee</span><a href="management-coffee.html">Trang quản lý</a></footer>
+<script src="customer.js"></script>
+</body>
+</html>
